@@ -111,9 +111,9 @@ jobs:
           Write-Host "⚠️ Backend test returned non-zero exit code"
         }
     
-###########################################
+    ###########################################
     # 6. Frontendのビルド（Flutter）
-###########################################
+    ###########################################
     - name: Get Flutter dependencies
       run: |
         cd frontend
@@ -191,40 +191,7 @@ jobs:
         # パスを追加
         $env:Path += ";C:\Program Files (x86)\Inno Setup 6"
         echo "C:\Program Files (x86)\Inno Setup 6" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-    
-    # ###########################################
-    # # 10. インストーラーのビルド
-    # ###########################################
-    # - name: Build installer with Inno Setup
-    #   run: |
-    #     $isccPath = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
-    #     $issFile = "installer/installer.iss"
-        
-    #     Write-Host "Building installer..."
-    #     & $isccPath $issFile
-        
-    #     if ($LASTEXITCODE -eq 0) {
-    #       Write-Host "✅ Installer built successfully"
-    #     } else {
-    #       Write-Host "❌ Installer build failed"
-    #       exit 1
-    #     }
-    
-    # - name: Verify installer
-    #   run: |
-    #     $installerPath = "installer/output/${{ env.APP_NAME }}_Setup_v${{ env.APP_VERSION }}.exe"
-        
-    #     if (Test-Path $installerPath) {
-    #       $size = (Get-Item $installerPath).Length / 1GB
-    #       Write-Host "✅ Installer created: $size GB"
-    #       Write-Host "Path: $installerPath"
-    #     } else {
-    #       Write-Host "❌ Installer not found"
-    #       Write-Host "Searching for installer files..."
-    #       Get-ChildItem -Path "installer/output" -Recurse
-    #       exit 1
-    #     }
-    
+
     ###########################################
     # 10. インストーラーのビルド
     ###########################################
@@ -294,10 +261,10 @@ jobs:
     - name: Upload installer artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ env.APP_NAME }}-Setup-v${{ env.APP_VERSION }}
-        path: installer/output/${{ env.APP_NAME }}_Setup_v${{ env.APP_VERSION }}.exe
+        name: MCApp-Setup-v${{ env.APP_VERSION }}
+        path: installer/output/*.exe
         retention-days: 30
-    
+
     - name: Upload build logs
       if: always()
       uses: actions/upload-artifact@v4
