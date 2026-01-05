@@ -119,6 +119,11 @@ jobs:
         cd frontend
         flutter pub get
     
+    - name: Add Windows desktop support
+      run: |
+        cd frontend
+        flutter create --platforms=windows .   
+    
     - name: Build Flutter Windows app
       run: |
         cd frontend
