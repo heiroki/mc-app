@@ -1,4 +1,4 @@
-# build/prepare_installer.py（修正版）
+# build/prepare_installer.py（修正版・完全版）
 
 import os
 import shutil
@@ -47,7 +47,8 @@ def prepare_installer():
     # 2. Flutter App（Flutter buildビルド成果物）
     # ========================================
     print("\n[2/4] Copying Flutter App...")
-    flutter_src = project_root / 'frontend' / 'build' / 'windows' / 'runner' / 'Release'
+    # ↓↓↓ x64 を追加 ↓↓↓
+    flutter_src = project_root / 'frontend' / 'build' / 'windows' / 'x64' / 'runner' / 'Release'
     flutter_dst = installer_pkg / 'flutter_app'
     
     if flutter_src.exists():
