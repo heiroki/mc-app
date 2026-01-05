@@ -111,9 +111,9 @@ jobs:
           Write-Host "⚠️ Backend test returned non-zero exit code"
         }
     
-    ###########################################
+###########################################
     # 6. Frontendのビルド（Flutter）
-    ###########################################
+###########################################
     - name: Get Flutter dependencies
       run: |
         cd frontend
@@ -122,24 +122,36 @@ jobs:
     - name: Add Windows desktop support
       run: |
         cd frontend
-        flutter create --platforms=windows .   
+        flutter create --platforms=windows .
     
     - name: Build Flutter Windows app
       run: |
         cd frontend
         flutter build windows --release
+    
+    - name: Verify Flutter build
+      run: |
+        cd frontend
         
-        if (Test-Path "build/windows/runner/Release") {
-          $exeFiles = Get-ChildItem "build/windows/runner/Release/*.exe"
-          if ($exeFiles) {
-            Write-Host "✅ Frontend built successfully"
-            Write-Host "Main executable: $($exeFiles[0].Name)"
+        $releasePath = "build\windows\x64\runner\Release"
+        
+        if (Test-Path $releasePath) {
+          Write-Host "[OK] Release directory found"
+          
+          # .exeファイルを検索
+          $exeFiles = Get-ChildItem -Path $releasePath -Filter "*.exe" -File
+          
+          if ($exeFiles.Count -gt 0) {
+            Write-Host "[OK] Frontend built successfully"
+            Write-Host "Executable: $($exeFiles[0].Name)"
+            Write-Host "Size: $([math]::Round($exeFiles[0].Length / 1MB, 2)) MB"
           } else {
-            Write-Host "❌ No executable found"
+            Write-Host "[ERROR] No executable found in $releasePath"
+            Get-ChildItem -Path $releasePath
             exit 1
           }
         } else {
-          Write-Host "❌ Frontend build failed"
+          Write-Host "[ERROR] Release directory not found: $releasePath"
           exit 1
         }
     
