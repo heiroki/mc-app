@@ -1,4 +1,4 @@
-# build/download_model.py
+# build/download_model.py（修正版）
 
 import os
 import sys
@@ -21,11 +21,11 @@ def download_model():
     # 既にダウンロード済みか確認
     if model_path.exists():
         size_gb = model_path.stat().st_size / (1024**3)
-        print(f"✅ Model already exists: {model_path} ({size_gb:.2f} GB)")
+        print(f"[OK] Model already exists: {model_path} ({size_gb:.2f} GB)")
         return
     
     print("=" * 60)
-    print(f"📥 Downloading model from Hugging Face...")
+    print("[INFO] Downloading model from Hugging Face...")
     print(f"   Repository: {model_repo}")
     print(f"   File: {model_name}")
     print(f"   Destination: {model_path}")
@@ -46,13 +46,13 @@ def download_model():
         
         size_gb = Path(downloaded_path).stat().st_size / (1024**3)
         print("=" * 60)
-        print(f"✅ Model downloaded successfully!")
+        print("[OK] Model downloaded successfully!")
         print(f"   Size: {size_gb:.2f} GB")
         print(f"   Path: {downloaded_path}")
         print("=" * 60)
         
     except ImportError:
-        print("❌ huggingface_hub is not installed")
+        print("[ERROR] huggingface_hub is not installed")
         print("Installing huggingface_hub...")
         os.system(f"{sys.executable} -m pip install huggingface_hub")
         
@@ -62,7 +62,7 @@ def download_model():
         
     except Exception as e:
         print("=" * 60)
-        print(f"❌ Model download failed: {e}")
+        print(f"[ERROR] Model download failed: {e}")
         print("=" * 60)
         sys.exit(1)
 

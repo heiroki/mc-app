@@ -1,8 +1,9 @@
-# build/prepare_installer.py
+# build/prepare_installer.py（修正版）
 
 import os
 import shutil
 from pathlib import Path
+import sys
 
 def prepare_installer():
     """インストーラー用のファイルを準備"""
@@ -19,7 +20,7 @@ def prepare_installer():
     
     # 既存のパッケージディレクトリをクリーンアップ
     if installer_pkg.exists():
-        print(f"🗑️  Cleaning existing package directory: {installer_pkg}")
+        print(f"[INFO] Cleaning existing package directory: {installer_pkg}")
         shutil.rmtree(installer_pkg)
     
     installer_pkg.mkdir(parents=True, exist_ok=True)
@@ -35,9 +36,9 @@ def prepare_installer():
     if backend_src.exists():
         shutil.copy2(backend_src, backend_dst / 'backend_server.exe')
         size_mb = backend_src.stat().st_size / (1024**2)
-        print(f"   ✅ Backend copied: {size_mb:.1f} MB")
+        print(f"   [OK] Backend copied: {size_mb:.1f} MB")
     else:
-        print(f"   ❌ Backend not found: {backend_src}")
+        print(f"   [ERROR] Backend not found: {backend_src}")
         print(f"   Please run PyInstaller first:")
         print(f"   pyinstaller build/backend_server.spec")
         raise FileNotFoundError(f"Backend executable not found: {backend_src}")
@@ -57,12 +58,12 @@ def prepare_installer():
         # 実行ファイル名を確認
         exe_files = list(flutter_dst.glob('*.exe'))
         if exe_files:
-            print(f"   ✅ Flutter App copied")
+            print(f"   [OK] Flutter App copied")
             print(f"   Main executable: {exe_files[0].name}")
         else:
-            print(f"   ⚠️  No .exe file found in Flutter build")
+            print(f"   [WARNING] No .exe file found in Flutter build")
     else:
-        print(f"   ❌ Flutter build not found: {flutter_src}")
+        print(f"   [ERROR] Flutter build not found: {flutter_src}")
         print(f"   Please run Flutter build first:")
         print(f"   cd frontend && flutter build windows --release")
         raise FileNotFoundError(f"Flutter build not found: {flutter_src}")
@@ -81,9 +82,9 @@ def prepare_installer():
         for model_file in model_files:
             shutil.copy2(model_file, models_dst / model_file.name)
             size_gb = model_file.stat().st_size / (1024**3)
-            print(f"   ✅ {model_file.name}: {size_gb:.2f} GB")
+            print(f"   [OK] {model_file.name}: {size_gb:.2f} GB")
     else:
-        print(f"   ❌ No model files found in: {models_src}")
+        print(f"   [ERROR] No model files found in: {models_src}")
         print(f"   Please download model first:")
         print(f"   python build/download_model.py")
         raise FileNotFoundError(f"No model files found in: {models_src}")
@@ -102,11 +103,11 @@ def prepare_installer():
         
         # スクリプトファイル一覧
         script_files = list(scripts_dst.glob('*.bat'))
-        print(f"   ✅ Scripts copied ({len(script_files)} files)")
+        print(f"   [OK] Scripts copied ({len(script_files)} files)")
         for script in script_files:
             print(f"      - {script.name}")
     else:
-        print(f"   ⚠️  Scripts directory not found: {scripts_src}")
+        print(f"   [WARNING] Scripts directory not found: {scripts_src}")
         print(f"   Creating empty scripts directory...")
         scripts_dst.mkdir(exist_ok=True)
     
@@ -114,8 +115,8 @@ def prepare_installer():
     # 完了
     # ========================================
     print("\n" + "=" * 60)
-    print("✅ Installer package prepared successfully!")
-    print(f"📁 Location: {installer_pkg}")
+    print("[OK] Installer package prepared successfully!")
+    print(f"[INFO] Location: {installer_pkg}")
     print("=" * 60)
     
     # パッケージ内容のサマリー
@@ -131,7 +132,7 @@ if __name__ == '__main__':
     try:
         prepare_installer()
     except Exception as e:
-        print(f"\n❌ Error: {e}")
+        print(f"\n[ERROR] Error: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
