@@ -12,12 +12,12 @@ on:
   workflow_dispatch:  # 手動実行を許可
 
 env:
-  APP_NAME: MyOllamaApp
+  APP_NAME: MCApp
   APP_VERSION: 1.0.0
   PYTHON_VERSION: '3.11'
   FLUTTER_VERSION: '3.16.0'
+  MODEL_REPO: alfredplpl/gemma-2-2b-jpn-it-gguf
   MODEL_NAME: gemma-2-2b-jpn-it-Q4_K_M.gguf
-  MODEL_REPO: mmnga/gemma-2-2b-jpn-it-gguf
 
 jobs:
   build-installer:
