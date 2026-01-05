@@ -61,7 +61,7 @@ Source: "package\flutter_app\*"; DestDir: "{app}\flutter_app"; Flags: ignorevers
 Source: "package\scripts\*.bat"; DestDir: "{app}\scripts"; Flags: ignoreversion
 
 ; VC++ Redistributable
-Source: "vcredist_x64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall
+Source: "VC_redist.x64.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall external skipifsourcedoesntexist
 
 ; Models（LocalAppDataにコピー）
 Source: "package\models\*.gguf"; DestDir: "{localappdata}\{#AppName}\models"; Flags: onlyifdoesntexist uninsneveruninstall
@@ -78,7 +78,7 @@ Name: "{autodesktop}\{#AppName}"; Filename: "{app}\scripts\start_app.bat"; IconF
 
 [Run]
 ; VC++ Redistributableをインストール
-Filename: "{tmp}\vcredist_x64.exe"; Parameters: "/quiet /norestart"; StatusMsg: "Visual C++ Redistributableをインストール中..."; Flags: waituntilterminated
+Filename: "{tmp}\VC_redist.x64.exe"; Parameters: "/quiet /norestart"; StatusMsg: "Visual C++ Redistributableをインストール中..."; Flags: waituntilterminated skipifdoesntexist
 
 ; 初回起動（オプション）
 Filename: "{app}\scripts\start_app.bat"; Description: "{#AppName}を起動"; Flags: postinstall nowait skipifsilent
