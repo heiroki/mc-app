@@ -6,7 +6,7 @@ from pathlib import Path
 
 # アプリケーション情報
 APP_VERSION = "1.0.0"
-APP_NAME = "MyOllamaApp"
+APP_NAME = "MCApp"
 
 # APIサーバー設定
 API_HOST = "127.0.0.1"

@@ -29,19 +29,29 @@ def prepare_installer():
     # 1. Backend（PyInstallerビルド成果物）
     # ========================================
     print("\n[1/4] Copying Backend...")
-    backend_src = project_root / 'dist' / 'backend_server.exe'
-    backend_dst = installer_pkg / 'backend'
-    backend_dst.mkdir(exist_ok=True)
     
-    if backend_src.exists():
-        shutil.copy2(backend_src, backend_dst / 'backend_server.exe')
-        size_mb = backend_src.stat().st_size / (1024**2)
-        print(f"   [OK] Backend copied: {size_mb:.1f} MB")
+    # ↓↓↓ パスを変更 ↓↓↓
+    backend_src = project_root / 'dist' / 'backend_server'  # ← フォルダ
+    backend_dst = installer_pkg / 'backend'
+    
+    if backend_src.exists() and backend_src.is_dir():
+        if backend_dst.exists():
+            shutil.rmtree(backend_dst)
+        shutil.copytree(backend_src, backend_dst)
+        
+        # backend_server.exeの存在確認
+        exe_path = backend_dst / 'backend_server.exe'
+        if exe_path.exists():
+            size_mb = exe_path.stat().st_size / (1024**2)
+            print(f"   [OK] Backend copied: {size_mb:.1f} MB")
+        else:
+            print(f"   [ERROR] backend_server.exe not found in {backend_dst}")
+            raise FileNotFoundError(f"Backend executable not found")
     else:
         print(f"   [ERROR] Backend not found: {backend_src}")
         print(f"   Please run PyInstaller first:")
         print(f"   pyinstaller build/backend_server.spec")
-        raise FileNotFoundError(f"Backend executable not found: {backend_src}")
+        raise FileNotFoundError(f"Backend directory not found: {backend_src}")
     
     # ========================================
     # 2. Flutter App（Flutter buildビルド成果物）
