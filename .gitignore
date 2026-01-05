@@ -1,0 +1,56 @@
+# .gitignore
+   
+   # Python
+   __pycache__/
+   *.py[cod]
+   *$py.class
+   *.so
+   .Python
+   env/
+   venv/
+   venv_build/
+   ENV/
+   *.egg-info/
+   dist/
+   build/
+   *.egg
+   
+   # Flutter
+   .dart_tool/
+   .flutter-plugins
+   .flutter-plugins-dependencies
+   .packages
+   .pub-cache/
+   .pub/
+   build/
+   
+   # IDEs
+   .vscode/
+   .idea/
+   *.swp
+   *.swo
+   *~
+   
+   # OS
+   .DS_Store
+   Thumbs.db
+   
+   # Models（大きいファイルは除外）
+   models/*.gguf
+   
+   # Installer出力
+   installer/output/
+   installer/package/
+   installer/vcredist_x64.exe
+   
+   # Logs
+   *.log
+   logs/
+   
+   # Environment
+   .env
+   .env.local
+   
+   # Database
+   *.db
+   *.sqlite
