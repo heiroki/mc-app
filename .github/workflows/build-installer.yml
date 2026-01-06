@@ -16,8 +16,8 @@ env:
   APP_VERSION: 1.0.0
   PYTHON_VERSION: '3.11'
   FLUTTER_VERSION: '3.16.0'
-  MODEL_REPO: alfredplpl/gemma-2-2b-jpn-it-gguf
   MODEL_NAME: gemma-2-2b-jpn-it-Q4_K_M.gguf
+  MODEL_REPO: alfredplpl/gemma-2-2b-jpn-it-gguf
 
 jobs:
   build-installer:
@@ -81,9 +81,9 @@ jobs:
       run: |
         if (Test-Path "models/${{ env.MODEL_NAME }}") {
           $size = (Get-Item "models/${{ env.MODEL_NAME }}").Length / 1GB
-          Write-Host "✅ Model file found: $size GB"
+          Write-Host "[OK] Model file found: $size GB"
         } else {
-          Write-Host "❌ Model file not found"
+          Write-Host "[ERROR] Model file not found"
           exit 1
         }
     
@@ -92,23 +92,37 @@ jobs:
     ###########################################
     - name: Build Backend with PyInstaller
       run: |
-        Write-Host "Building Backend..."
+        Write-Host "=========================================="
+        Write-Host "Building Backend with PyInstaller..."
+        Write-Host "=========================================="
         pyinstaller build/backend_server.spec
-        
-        if (Test-Path "dist/backend_server.exe") {
-          $size = (Get-Item "dist/backend_server.exe").Length / 1MB
-          Write-Host "✅ Backend built successfully: $size MB"
-        } else {
-          Write-Host "❌ Backend build failed"
-          exit 1
-        }
     
-    - name: Test Backend executable
+    - name: Verify Backend build
       run: |
-        Write-Host "Testing Backend..."
-        $process = Start-Process -FilePath "dist/backend_server.exe" -ArgumentList "--help" -Wait -NoNewWindow -PassThru
-        if ($process.ExitCode -ne 0) {
-          Write-Host "⚠️ Backend test returned non-zero exit code"
+        Write-Host "Verifying Backend build..."
+        
+        $backendDir = "dist\backend_server"
+        $backendExe = "$backendDir\backend_server.exe"
+        
+        if (Test-Path $backendDir) {
+          Write-Host "[OK] Backend directory found: $backendDir"
+          
+          if (Test-Path $backendExe) {
+            $size = (Get-Item $backendExe).Length / 1MB
+            $fileCount = (Get-ChildItem -Path $backendDir -Recurse -File).Count
+            Write-Host "[OK] Backend executable found: $([math]::Round($size, 2)) MB"
+            Write-Host "[INFO] Total files in backend directory: $fileCount"
+          } else {
+            Write-Host "[ERROR] Backend executable not found: $backendExe"
+            exit 1
+          }
+        } else {
+          Write-Host "[ERROR] Backend directory not found: $backendDir"
+          Write-Host "Checking dist directory..."
+          if (Test-Path "dist") {
+            Get-ChildItem -Path "dist" -Recurse | Select-Object -First 10
+          }
+          exit 1
         }
     
     ###########################################
@@ -138,13 +152,12 @@ jobs:
         if (Test-Path $releasePath) {
           Write-Host "[OK] Release directory found"
           
-          # .exeファイルを検索
           $exeFiles = Get-ChildItem -Path $releasePath -Filter "*.exe" -File
           
           if ($exeFiles.Count -gt 0) {
             Write-Host "[OK] Frontend built successfully"
-            Write-Host "Executable: $($exeFiles[0].Name)"
-            Write-Host "Size: $([math]::Round($exeFiles[0].Length / 1MB, 2)) MB"
+            Write-Host "     Executable: $($exeFiles[0].Name)"
+            Write-Host "     Size: $([math]::Round($exeFiles[0].Length / 1MB, 2)) MB"
           } else {
             Write-Host "[ERROR] No executable found in $releasePath"
             Get-ChildItem -Path $releasePath
@@ -161,16 +174,16 @@ jobs:
     - name: Download VC++ Redistributable
       run: |
         $vcRedistUrl = "https://aka.ms/vs/17/release/vc_redist.x64.exe"
-        $vcRedistPath = "installer/vcredist_x64.exe"
+        $vcRedistPath = "installer/VC_redist.x64.exe"
         
         Write-Host "Downloading VC++ Redistributable..."
         Invoke-WebRequest -Uri $vcRedistUrl -OutFile $vcRedistPath
         
         if (Test-Path $vcRedistPath) {
           $size = (Get-Item $vcRedistPath).Length / 1MB
-          Write-Host "✅ VC++ Redistributable downloaded: $size MB"
+          Write-Host "[OK] VC++ Redistributable downloaded: $([math]::Round($size, 2)) MB"
         } else {
-          Write-Host "❌ VC++ Redistributable download failed"
+          Write-Host "[ERROR] VC++ Redistributable download failed"
           exit 1
         }
     
@@ -188,10 +201,9 @@ jobs:
       run: |
         choco install innosetup -y
         
-        # パスを追加
         $env:Path += ";C:\Program Files (x86)\Inno Setup 6"
         echo "C:\Program Files (x86)\Inno Setup 6" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
+    
     ###########################################
     # 10. インストーラーのビルド
     ###########################################
@@ -201,27 +213,13 @@ jobs:
         Write-Host "Checking installer directory contents..."
         Write-Host "=========================================="
         
-        # installer/ディレクトリの内容確認
         if (Test-Path "installer") {
-          Get-ChildItem -Path "installer" -Recurse | ForEach-Object {
-            Write-Host $_.FullName
+          Get-ChildItem -Path "installer" -Recurse | Select-Object -First 30 | ForEach-Object {
+            $type = if ($_.PSIsContainer) { "DIR" } else { "$([math]::Round($_.Length / 1MB, 2)) MB" }
+            Write-Host "$($_.FullName) - $type"
           }
         } else {
           Write-Host "[ERROR] installer directory not found"
-        }
-        
-        Write-Host "`n=========================================="
-        Write-Host "Checking installer/package directory..."
-        Write-Host "=========================================="
-        
-        # installer/package/ディレクトリの内容確認
-        if (Test-Path "installer/package") {
-          Get-ChildItem -Path "installer/package" -Recurse | Select-Object -First 20 | ForEach-Object {
-            $size = if ($_.PSIsContainer) { "DIR" } else { "$([math]::Round($_.Length / 1MB, 2)) MB" }
-            Write-Host "$($_.FullName) - $size"
-          }
-        } else {
-          Write-Host "[ERROR] installer/package directory not found"
         }
     
     - name: Build installer with Inno Setup
@@ -238,33 +236,42 @@ jobs:
           exit 1
         }
         
-        # Inno Setup実行（詳細ログ出力）
-        & $isccPath /O+ $issFile
+        & $isccPath $issFile
         
         if ($LASTEXITCODE -eq 0) {
           Write-Host "[OK] Installer built successfully"
         } else {
           Write-Host "[ERROR] Installer build failed with exit code: $LASTEXITCODE"
-          
-          # installer/output/ディレクトリの確認
-          if (Test-Path "installer/output") {
-            Write-Host "`nFiles in installer/output:"
-            Get-ChildItem -Path "installer/output"
-          }
-          
           exit 1
         }
-
+    
+    - name: Verify installer
+      run: |
+        $installerPath = "installer/output/${{ env.APP_NAME }}_Setup_v${{ env.APP_VERSION }}.exe"
+        
+        if (Test-Path $installerPath) {
+          $size = (Get-Item $installerPath).Length / 1GB
+          Write-Host "[OK] Installer created: $([math]::Round($size, 2)) GB"
+          Write-Host "Path: $installerPath"
+        } else {
+          Write-Host "[ERROR] Installer not found: $installerPath"
+          Write-Host "Searching for installer files..."
+          if (Test-Path "installer/output") {
+            Get-ChildItem -Path "installer/output" -Recurse
+          }
+          exit 1
+        }
+    
     ###########################################
     # 11. 成果物のアップロード
     ###########################################
     - name: Upload installer artifact
       uses: actions/upload-artifact@v4
       with:
-        name: MCApp-Setup-v${{ env.APP_VERSION }}
-        path: installer/output/*.exe
+        name: ${{ env.APP_NAME }}-Setup-v${{ env.APP_VERSION }}
+        path: installer/output/
         retention-days: 30
-
+    
     - name: Upload build logs
       if: always()
       uses: actions/upload-artifact@v4
@@ -293,13 +300,21 @@ jobs:
           3. デスクトップの「${{ env.APP_NAME }}」アイコンから起動
           
           ### システム要件
-          - OS: Windows 11 Enterprise 23H2以降
-          - CPU: Intel 11th Gen Core以降（AVX2対応）
-          - メモリ: 16GB以上
+          - OS: Windows 10/11 (64bit)
+          - CPU: Intel Core i5 以降（AVX2対応）
+          - メモリ: 8GB以上推奨
           - ストレージ: 5GB以上の空き容量
+          
+          ### 初回起動について
+          初回起動時はAIモデルの読み込みに30秒〜1分程度かかります。
+          
+          ### トラブルシューティング
+          - バックエンドの起動に失敗する場合は、スタートメニューから「ログを収集」を実行し、デスクトップに作成されたログフォルダを確認してください
+          - ウイルス対策ソフトがブロックしている場合は、例外設定を行ってください
           
           ### 変更履歴
           - 初回リリース
+          - デスクトップアプリ版として完全オフライン動作
+          - ローカルAIモデル（Gemma 2 2B）による日本語対応
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
